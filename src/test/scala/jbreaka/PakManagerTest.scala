@@ -2,6 +2,7 @@ package jbreaka
 
 import java.io.File
 
+import jbreaka.capcom.CharacterCodes
 import jbreaka.io.PakManager
 import org.scalatest.FunSuite
 
@@ -9,9 +10,8 @@ class PakManagerTest extends FunSuite {
   val pm = new PakManager()
 
   test("find the correct character codes") {
-
-    assert(pm.charCodes.size == 38)
-    assert(pm.charCodes.contains("URN"))
+    val res = CharacterCodes.analyzePakPath("StreetFighterV/Content/Chara/Z33/SkelMesh/02/Texture/CT_Z33_02_COLOR_02.uasset")
+    println(res)
   }
 
   test("read and extract pak files") {
