@@ -66,7 +66,15 @@ class FileManager {
           }
         }
 
-        folderConversions(rfiles.map(_.getParentFile).filter(_.getName != "StreetFighterV"))
+        val nextFileIter = for{
+          rfile <- rfiles
+          _ = println(rfile)
+          parent = rfile.getParentFile
+          if(parent != null)
+          if(parent.getName() != "StreetFighterV")
+        } yield parent
+        println("+++++"+nextFileIter)
+        folderConversions(nextFileIter)
       }
     }
 

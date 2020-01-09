@@ -168,8 +168,8 @@ object CharacterCodes {
       }
     }
 
-    val PREFIX = "StreetFighterV/Content/Chara/"
-    path.indexOf(PREFIX).some.filter(_ >= 0).
+    val PREFIX = "StreetFighterV/Content/Chara/".toLowerCase
+    val found = path.toLowerCase.indexOf(PREFIX).some.filter(_ >= 0).
       flatMap(index=> {
         val endCharCode = path.indexOf('/',index+PREFIX.length+1)
         println(s"&&& index: $index  endCharCode: $endCharCode")
@@ -182,6 +182,8 @@ object CharacterCodes {
         getSfvChar(pair._1).
           flatMap(sfvC => getSfvCharCode(sfvC, pair._2).map(c => Pak(sfvC, pair._2, c)))
       })
+    println("analysis found: "+found)
+    found
   }
 
 }
