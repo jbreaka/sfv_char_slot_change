@@ -11,8 +11,8 @@ class PakManager {
   /**
    * Extract the file and return the extracted Files.
    */
-  def read(file:File):Set[File]= {
-    val u4pak = writeU4pakToDisk()
+  def read(u4pak:File, file:File):Set[File]= {
+//    val u4pak = writeU4pakToDisk()
 //    println(Source.fromFile(u4pak).mkString)
     val files = executeU4pakList(u4pak, file)
     files.foreach(f => {
@@ -22,7 +22,7 @@ class PakManager {
     files
   }
 
-  private def writeU4pakToDisk()={
+  def writeU4pakToDisk()={
     val script = File.createTempFile("u4pak","py")
     script.deleteOnExit()
     script.setExecutable(true)
@@ -57,4 +57,15 @@ class PakManager {
     files
   }
 
+  def executeU4pakPack(u4pak:File, pak2conv:File)={
+    val params = List[String]("python", u4pak.getCanonicalPath,"pack",pak2conv.getCanonicalPath,"StreetFighterV").asJava
+    val process = new ProcessBuilder(params).start()
+
+    val stdout = process.getInputStream()
+    val files = for{
+      line <- Source.fromInputStream(stdout,StandardCharsets.UTF_8.name()).getLines().toSet[String]
+      file = new File(line)
+    } yield file
+    files
+  }
 }

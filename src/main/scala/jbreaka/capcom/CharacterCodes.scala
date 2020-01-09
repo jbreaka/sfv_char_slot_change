@@ -133,14 +133,18 @@ object CharacterCodes {
     case _ => null
   })
 
-  case class Pak(character:SfvChar,slot:Short)
+  case class Pak(character:SfvChar,slot:Short,code:String){
+    require(code.size == 3)
+    require(slot > 0)
+    require(character != null)
+  }
 
   /**
    * Get the Character and the Slot of the existing PAK
    */
   def analyzePakPath(path:String):Option[Pak] ={
     val PATH_SIZE = path.size
-
+    println(s"analyze $path")
     /**
      * get the slot of the PAK
      */
@@ -167,16 +171,16 @@ object CharacterCodes {
     val PREFIX = "StreetFighterV/Content/Chara/"
     path.indexOf(PREFIX).some.filter(_ >= 0).
       flatMap(index=> {
-        val endCharCode = path.indexOf('/',PREFIX.length)
-        println(s"&&& $index  $endCharCode")
-        val characterCode:String = path.substring(PREFIX.length,endCharCode)
+        val endCharCode = path.indexOf('/',index+PREFIX.length+1)
+        println(s"&&& index: $index  endCharCode: $endCharCode")
+        val characterCode:String = path.substring(index+PREFIX.size,endCharCode)
         println(">>>"+characterCode)
         val slotO = findSlot(endCharCode)
         println(s"slot = $slotO")
         slotO.map(slot => (characterCode,slot))
       }).flatMap(pair => {
         getSfvChar(pair._1).
-          map(c => Pak(c, pair._2))
+          flatMap(sfvC => getSfvCharCode(sfvC, pair._2).map(c => Pak(sfvC, pair._2, c)))
       })
   }
 
