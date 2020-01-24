@@ -1,35 +1,70 @@
 package jbreaka.io
 
-import java.io.File
+import java.io.{File, FileInputStream, FileOutputStream, IOException, PrintWriter}
 
 import jbreaka.capcom.CharacterCodes
 import jbreaka.capcom.CharacterCodes.Pak
+import scalaz.\/
 
 import scala.annotation.tailrec
+import scala.io.Source
 
-class FileManager {
+object FileManager {
+
+  private def int2Str(num:Int) = if( num < 10) s"0$num" else num.toString
+
+  /**
+   * Read binary file from disk and translate it to string
+   */
+  def fileToString(file:File):Exception\/String = \/.fromTryCatchNonFatal{
+    val in = new FileInputStream(file)
+    String.valueOf(in.readAllBytes().map(_.toChar))
+  }.leftMap(t=> if(t.isInstanceOf[Exception]) t.asInstanceOf[Exception] else new Exception(t))
+
+//  def modifyModReferences(str:String)
+  
   def manage(pak:Pak, newSlot:Short, files:Set[File])={
-    val currSlotStr = int2Str(pak.slot)
-    val newSlotStr = int2Str(newSlot)
-    val oldCharCode = pak.code
-    val newCharCode = CharacterCodes.getSfvCharCode(pak.character,newSlot).get
-    val DIFF_CHAR_CODE = oldCharCode != newCharCode
-    println(s"oldCharCode($oldCharCode) == newCharCode($newCharCode)  $DIFF_CHAR_CODE")
 
-    val keyFilenames = Set[String]("Costume","Preview","Setting","Preset","Material","Prop")
-    val oldKeyFilenames = keyFilenames.map(_ + s"_${currSlotStr}")
-    val newKeyFilenames = keyFilenames.map(_ + s"_${newSlotStr}")
-    val keyFileNamesPairing:Set[(String,String)] = oldKeyFilenames.zip(newKeyFilenames)
+    //Slot for costume
+    val CURR_SLOT_STR = int2Str(pak.slot)
+    val NEW_SLOT_STR = int2Str(newSlot)
+
+    //Character codes
+    val OLD_CHAR_CODE = pak.code
+    val NEW_CHAR_CODE = CharacterCodes.getSfvCharCode(pak.character,newSlot).get
+    val DIFF_CHAR_CODE = OLD_CHAR_CODE != NEW_CHAR_CODE
+    println(s"oldCharCode($OLD_CHAR_CODE) == newCharCode($NEW_CHAR_CODE)  $DIFF_CHAR_CODE")
+
+    val OLD_CODE_AND_SLOT = s"${OLD_CHAR_CODE}_${CURR_SLOT_STR}"
+    val NEW_CODE_AND_SLOT = s"${NEW_CHAR_CODE}_${NEW_SLOT_STR}"
+
+    val OLD_CODE_BARS = s"_${OLD_CHAR_CODE}_"
+    val NEW_CODE_BARS = s"_${NEW_CHAR_CODE}_"
+
+    //Pairing key files and slots
+    val keyFilenames = List[String]("Costume","Preview","Setting","Preset","Material","Prop")
+    val oldKeyFilenames = keyFilenames.map(_ + s"_${CURR_SLOT_STR}")
+    val newKeyFilenames = keyFilenames.map(_ + s"_${NEW_SLOT_STR}")
+    val keyFileNamesPairing:Set[(String,String)] = oldKeyFilenames.zip(newKeyFilenames).toSet
+
+    def stringAdjustment(str:String):String = {
+      val fixedName = keyFileNamesPairing.foldLeft(str)((name,pair) => {name.replaceAll(pair._1,pair._2)})
+      val newStr = fixedName.
+        replaceAll(OLD_CODE_AND_SLOT,NEW_CODE_AND_SLOT).
+        replaceAll(OLD_CODE_BARS, NEW_CODE_BARS).
+        replaceAll(s"/$CURR_SLOT_STR/",s"/$NEW_SLOT_STR/").
+        replaceAll(s"/$OLD_CHAR_CODE",s"/$NEW_CHAR_CODE")
+      newStr
+    }
+
     /**
      * only called with files that need to be renamed
      */
     def renameFile(file:File)={
-      val fixedName = keyFileNamesPairing.foldLeft(file.getName())((name,pair) => {name.replace(pair._1,pair._2)})
+      editFile(file)
 
-      val newName = fixedName.
-        replace(s"${oldCharCode}_${currSlotStr}", s"${newCharCode}_${newSlotStr}").
-        replace(s"_${oldCharCode}_", s"_${newCharCode}_")
-      val finalNewName =  if(newName.startsWith(s"${oldCharCode}_")) newName.replace(s"${oldCharCode}_",s"${newCharCode}_")
+      val newName = stringAdjustment(file.getName)
+      val finalNewName =  if(newName.startsWith(s"${OLD_CHAR_CODE}_")) newName.replace(s"${OLD_CHAR_CODE}_",s"${NEW_CHAR_CODE}_")
                           else newName
       val newCanonicalPath = file.getParentFile.getPath + File.separator + finalNewName
       val newFile = new File(newCanonicalPath)
@@ -37,6 +72,20 @@ class FileManager {
       if(!renamed) println(s"Failed to rename $file.getName to $finalNewName")
       newFile
     }
+
+    def editFile(file:File):Throwable\/Unit = \/.fromTryCatchNonFatal{
+      val in = new FileInputStream(file)
+      val str = String.valueOf(in.readAllBytes().map(_.toChar))
+
+      val writer = new PrintWriter(file)
+      writer.write(stringAdjustment(str))
+      writer.close()
+    }.leftMap(e => {
+        System.err.println(s"Failed to read ${file.getCanonicalPath}. Exists? ${file.exists()} Read? ${file.canRead}")
+        e.printStackTrace()
+        e
+    })
+
 
     println(s"See if ${files.size} files need to be renamed")
 
@@ -55,12 +104,12 @@ class FileManager {
           name = file.getName
         } yield {
           println(s"checking for folder conversion...$name")
-          if(name == currSlotStr){
-            val newCanonicalPath = file.getParentFile.getPath + File.separator + newSlotStr
+          if(name == CURR_SLOT_STR){
+            val newCanonicalPath = file.getParentFile.getPath + File.separator + NEW_SLOT_STR
             val renamed = file.renameTo(new File(newCanonicalPath))
             println("::slot::"+renamed)
-          } else if(DIFF_CHAR_CODE && name == oldCharCode) {
-            val newCanonicalPath = file.getParentFile.getPath + File.separator + newCharCode
+          } else if(DIFF_CHAR_CODE && name == OLD_CHAR_CODE) {
+            val newCanonicalPath = file.getParentFile.getPath + File.separator + NEW_CHAR_CODE
             val renamed = file.renameTo(new File(newCanonicalPath))
             println("--code--"+renamed)
           }
@@ -82,7 +131,7 @@ class FileManager {
     println("Finished folder conversions")
   }
 
-  private def int2Str(num:Int) = if( num < 10) s"0$num" else num.toString
+
 
 
 }

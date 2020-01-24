@@ -12,8 +12,6 @@ class PakManager {
    * Extract the file and return the extracted Files.
    */
   def read(u4pak:File, file:File):Set[File]= {
-//    val u4pak = writeU4pakToDisk()
-//    println(Source.fromFile(u4pak).mkString)
     val files = executeU4pakList(u4pak, file)
     files.foreach(f => {
       println(s"$f exists? ${f.exists()}")
