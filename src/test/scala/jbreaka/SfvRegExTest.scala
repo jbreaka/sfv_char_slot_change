@@ -10,9 +10,9 @@ import java.io.File
 
 class SfvRegExTest  extends AnyFunSuite {
   ignore("find character code") {
-    assert(SfvRegEx.findCharCode("StreetFighterV/Content/Chara/Z33/SkelMesh/02/Material/CM_Z33_02_E15_Whip_L.uasset").isDefined)
-    assert(SfvRegEx.findCharCode("streetfighterv/Content/Chara/Z33/SkelMesh/02/Material/CM_Z33_02_E15_Whip_L.uasset").isDefined)
-    assert(SfvRegEx.findCharCode("STREETFIGHTERV/Content/Chara/Z33/SkelMesh/02/Material/CM_Z33_02_E15_Whip_L.uasset").isDefined)
+    assert(SfvRegEx.findSfvChar("StreetFighterV/Content/Chara/Z33/SkelMesh/02/Material/CM_Z33_02_E15_Whip_L.uasset").isDefined)
+    assert(SfvRegEx.findSfvChar("streetfighterv/Content/Chara/Z33/SkelMesh/02/Material/CM_Z33_02_E15_Whip_L.uasset").isDefined)
+    assert(SfvRegEx.findSfvChar("STREETFIGHTERV/Content/Chara/Z33/SkelMesh/02/Material/CM_Z33_02_E15_Whip_L.uasset").isDefined)
   }
 
   ignore("find character slot") {

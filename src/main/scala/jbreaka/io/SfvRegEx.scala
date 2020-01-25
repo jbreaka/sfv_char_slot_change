@@ -12,7 +12,7 @@ object SfvRegEx {
   protected val characterCodePreix = "StreetFighterV/Content/Chara/".length
   protected val CHARACTER_CODE_REGEEX  = "(StreetFighterV|STREETFIGHTERV|streetfighterv)/Content/Chara/[a-zA-Z0-9]{3}".r
 
-  def findCharCode(str:String):Option[SfvChar]=for {
+  def findSfvChar(str:String):Option[SfvChar]=for {
     s <- CHARACTER_CODE_REGEEX.findFirstIn(str)
     _ = println(s)
     characterCodeStr = s.substring(characterCodePreix,s.length)
@@ -22,8 +22,8 @@ object SfvRegEx {
   protected val SLOT_REGEEX  = "(StreetFighterV|STREETFIGHTERV|streetfighterv)/Content/Chara/[a-zA-Z0-9]{3}/[a-zA-Z]*/\\d{2}".r
   protected val SLOT_EXTRACT_REGEX = "/\\d{2}".r
 
-  def findSlot(path:String):Option[Short]= for {
-    s <- SLOT_REGEEX.findFirstIn(path)
+  def findSlot(content:String):Option[Short]= for {
+    s <- SLOT_REGEEX.findFirstIn(content)
     iter = SLOT_EXTRACT_REGEX.findAllIn(s)
     slot = iter.group(iter.groupCount).substring(1)
   } yield slot.toShort
@@ -36,7 +36,10 @@ object SfvRegEx {
   def replaceStrings(char:SfvChar, newSlot:Short, prevSlot:Short, str:String):String={
 
     case class Change(regEx:Regex,replace:String){
-      def change(str:String):String = regEx.replaceAllIn(str,replace)
+      def change(str:String):String = {
+        println(s"replacing ${regEx.pattern} to $replace ...")
+        regEx.replaceAllIn(str,replace)
+      }
     }
 
     val result = for{
@@ -56,7 +59,7 @@ object SfvRegEx {
         Change(s"/$prevCharCode".r,s"/$newCharCode")
       ) ++
         List[String]("Costume","Preview","Setting","Preset","Material","Prop").
-          map(k => Change((k+ s"_${prevSlotStr}").r,k+ s"_${newSlotStr}"))
+          map(k => Change((s"${k}_${prevSlotStr}").r,s"${k}_${newSlotStr}"))
         CHANGES.foldLeft(str)((s:String,c:Change)=> c.change(s))
     }
     result match {

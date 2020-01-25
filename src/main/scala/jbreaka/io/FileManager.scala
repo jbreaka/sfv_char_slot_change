@@ -21,8 +21,6 @@ object FileManager {
     String.valueOf(in.readAllBytes().map(_.toChar))
   }.leftMap(t=> if(t.isInstanceOf[Exception]) t.asInstanceOf[Exception] else new Exception(t))
 
-//  def modifyModReferences(str:String)
-  
   def manage(pak:Pak, newSlot:Short, files:Set[File])={
 
     //Slot for costume

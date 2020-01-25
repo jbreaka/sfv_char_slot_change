@@ -3,10 +3,14 @@ package jbreaka.io
 import java.io.{BufferedReader, File, InputStreamReader, PrintWriter}
 import java.nio.charset.StandardCharsets
 
+import scalaz.\/
+
 import scala.io.Source
 import scala.jdk.CollectionConverters._
+import scalaz._
+import Scalaz._
 
-class PakManager {
+object PakManager {
 
   /**
    * Extract the file and return the extracted Files.
@@ -20,17 +24,23 @@ class PakManager {
     files
   }
 
+  def write2Disk(destination:File,contents:String):Exception\/File = \/.fromTryCatchNonFatal{
+    val writer = new PrintWriter(destination)
+    writer.write(contents)
+    writer.close()
+    destination
+  }.leftMap(_.asInstanceOf[Exception])
+
   def writeU4pakToDisk()={
     val script = File.createTempFile("u4pak","py")
     script.deleteOnExit()
     script.setExecutable(true)
-
     val u4pakStr = Source.fromFile("src/main/resources/u4pak.py").mkString
-    val writer = new PrintWriter(script)
-    writer.write(u4pakStr)
-    writer.close()
-
-    script
+    write2Disk(script,u4pakStr) match {
+      case -\/(e) => e.printStackTrace()
+        null
+      case \/-(f) => f
+    }
   }
 
   private def executeU4pak(u4pak:File, pak2conv:File, command:String)={

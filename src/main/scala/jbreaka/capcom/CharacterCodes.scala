@@ -3,6 +3,7 @@ package jbreaka.capcom
 import scala.io.Source
 import scalaz._
 import Scalaz._
+import jbreaka.io.SfvRegEx
 
 import scala.annotation.tailrec
 
@@ -133,11 +134,20 @@ object CharacterCodes {
     case _ => null
   })
 
+
+
   case class Pak(character:SfvChar,slot:Short,code:String){
     require(code.size == 3)
     require(slot > 0)
     require(character != null)
   }
+
+
+  def analyzeContent(contentStr:String):Option[Pak]= for {
+    sfvChar <- SfvRegEx.findSfvChar(contentStr)
+    slot <- SfvRegEx.findSlot(contentStr)
+    charCode <- getSfvCharCode(sfvChar,slot)
+  }yield Pak(sfvChar,slot,charCode)
 
   /**
    * Get the Character and the Slot of the existing PAK
