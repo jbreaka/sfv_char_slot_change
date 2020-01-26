@@ -9,6 +9,14 @@ import Scalaz._
 import scala.jdk.CollectionConverters._
 
 object Main extends App {
+  val javaVersion = System.getProperty("java.version").split("\\.")(0).toInt
+  println(s"Java Version= $javaVersion")
+  if(javaVersion < 12){
+    println(s"You are using Java version $javaVersion, but this application requires you to have Java Version 12 or greater. Please download the latest JRE or JDK from Oracle.\n"+
+    "\nhttps://www.oracle.com/technetwork/java/javase/downloads/index.html")
+    System.exit(0)
+  }
+
 val usage = """sfv_char_slot_change <new slot number> <original PAK> <new PAK>
 ie.  sfv_char_slot_change 2 poisonC1-Catwoman.pak poisonC2-Catwoman.pak
 
