@@ -1,5 +1,5 @@
 # sfv_char_slot_change
-This tool is intended to swap mods to different character slots.  It requires <a href="https://www.java.com/en/download/">Java</a> to run.  This tool can run on any computer (Windows, Mac, Linux)
+This tool is intended to swap mods to different character slots.  It requires <a href="https://www.oracle.com/technetwork/java/javase/downloads/jdk13-downloads-5672538.html">Java</a> to run.  This tool can run on any computer (Windows, Mac, Linux)
 
 ====We're in Alpha Currently=========<br>
 Download latest version <a href="https://drive.google.com/file/d/1lFQ_pHWtRQMV-7NIklR1_-iaaJkt7wtn/view?usp=sharing">here</a>.
