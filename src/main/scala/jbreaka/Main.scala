@@ -40,7 +40,7 @@ ie.  sfv_char_slot_change 2 poisonC1-Catwoman.pak poisonC2-Catwoman.pak
   
   val res = for{
     source <- FileManager.fileToBytes(pak2Conv)
-    contentStr <- FileManager.fileToString(pak2Conv)
+    contentStr <- FileManager.bytesToStringWithCheck(source, pak2Conv)
     //get details about source pak
     pak <- CharacterCodes.analyzeContent(contentStr)
     _ = println(s"Found $pak")
@@ -48,9 +48,7 @@ ie.  sfv_char_slot_change 2 poisonC1-Catwoman.pak poisonC2-Catwoman.pak
     //TODO
     swaps <- SfvRegEx.identifySwaps(pak.character, newSlot, pak.slot, contentStr)
     swappedBytes = ByteArrayOps.replaceAll(source, swaps)
-    newStr = FileManager.bytesToString(swappedBytes)
-    _ = println("the new string was created.")
-    f <- PakManager.write2Disk(destination,newStr)
+    f <- PakManager.write2Disk(destination,swappedBytes)
   } yield f
   res.swap.foreach(_.printStackTrace())
   println("Done.")

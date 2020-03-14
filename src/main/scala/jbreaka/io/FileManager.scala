@@ -23,6 +23,13 @@ object FileManager {
 
   def bytesToString(bytes:Array[Byte]):String = (bytes.map(_.toChar)).mkString
 
+  def bytesToStringWithCheck(bytes:Array[Byte],file:File):Exception\/String = {
+    val str = bytesToString(bytes)
+    if(bytes.length != file.length()) new IllegalStateException(s"Only was able to read ${bytes.length} but should have read ${file.length()}").left[String]
+    else if(str.length != file.length()) new IllegalStateException(s"Converting bytes to string caused loss of data. String is ${str.length} but should have been ${file.length()}").left[String]
+    else str.right[Exception]
+  }
+
   def fileToString(file:File):Exception\/String = {
     fileToBytes(file).map(by => {
       bytesToString(by)

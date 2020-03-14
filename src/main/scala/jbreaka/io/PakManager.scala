@@ -1,6 +1,6 @@
 package jbreaka.io
 
-import java.io.{BufferedReader, File, InputStreamReader, PrintWriter}
+import java.io.{BufferedOutputStream, BufferedReader, File, FileOutputStream, InputStreamReader, PrintWriter}
 import java.nio.charset.StandardCharsets
 
 import scalaz.\/
@@ -23,6 +23,14 @@ object PakManager {
     executeU4pakUnpack(u4pak, file)
     files
   }
+
+  def write2Disk(destination:File,contents:Array[Byte]):Exception\/File = \/.fromTryCatchNonFatal{
+    println("Writing the new PAK contents to disk")
+    val bos = new BufferedOutputStream(new FileOutputStream(destination))
+    bos.write(contents)
+    bos.close() // You may end up with 0 bytes file if not calling close.
+    destination
+  }.leftMap(_.asInstanceOf[Exception])
 
   def write2Disk(destination:File,contents:String):Exception\/File = \/.fromTryCatchNonFatal{
     val writer = new PrintWriter(destination)
