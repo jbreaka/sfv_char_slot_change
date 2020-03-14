@@ -26,6 +26,7 @@ object PakManager {
 
   def write2Disk(destination:File,contents:String):Exception\/File = \/.fromTryCatchNonFatal{
     val writer = new PrintWriter(destination)
+    println("Writing the new PAK contents to disk")
     writer.write(contents)
     writer.close()
     destination

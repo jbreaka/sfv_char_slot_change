@@ -1,5 +1,7 @@
 package jbreaka.capcom
 
+import java.lang.Exception
+
 import scala.io.Source
 import scalaz._
 import Scalaz._
@@ -142,11 +144,12 @@ object CharacterCodes {
     require(character != null)
   }
 
+  def except(s:String) = new Exception(s)
 
-  def analyzeContent(contentStr:String):Option[Pak]= for {
-    sfvChar <- SfvRegEx.findSfvChar(contentStr)
-    slot <- SfvRegEx.findSlot(contentStr)
-    charCode <- getSfvCharCode(sfvChar,slot)
+  def analyzeContent(contentStr:String):Exception\/Pak = for {
+    sfvChar <- SfvRegEx.findSfvChar(contentStr) \/> new Exception("Could not determine the SFV character associated with the PAK")
+    slot <- SfvRegEx.findSlot(contentStr) \/> new Exception("Could not determine the SFV character slot associated with the PAK")
+    charCode <- getSfvCharCode(sfvChar,slot) \/> new Exception("Could not determine the SFV character code associated with the PAK")
   }yield Pak(sfvChar,slot,charCode)
 
   /**

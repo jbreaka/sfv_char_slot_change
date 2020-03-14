@@ -3,9 +3,11 @@ package jbreaka
 import java.io.File
 
 import jbreaka.capcom.CharacterCodes
-import jbreaka.io.{FileManager, PakManager, SfvRegEx}
+import jbreaka.io.{ByteArrayOps, FileManager, PakManager, SfvRegEx}
 import scalaz._
 import Scalaz._
+import jbreaka.io.ByteArrayOps.Swap
+
 import scala.jdk.CollectionConverters._
 
 object Main extends App {
@@ -30,20 +32,26 @@ ie.  sfv_char_slot_change 2 poisonC1-Catwoman.pak poisonC2-Catwoman.pak
     require(pak2Conv.isFile,s"The $file provided is not actually a file. This argument needs to be a file.")
     require(pak2Conv.canRead,s"Cannot read the file $file.")
   }
+  //Confirm the file source and destination are valid
   val pak2Conv = new File(args(1))
   verifyFileArg(pak2Conv)
   val destination = new File(args(2))
-  verifyFileArg(destination)
-
-  for{
+  require(destination.getName.endsWith(".pak"),s"Destination file ${destination} must end with .pak")
+  
+  val res = for{
+    source <- FileManager.fileToBytes(pak2Conv)
     contentStr <- FileManager.fileToString(pak2Conv)
-    pak <- CharacterCodes.analyzeContent(contentStr) \/> new Exception("Could not determine details about the PAK")
+    //get details about source pak
+    pak <- CharacterCodes.analyzeContent(contentStr)
     _ = println(s"Found $pak")
-    newStr = SfvRegEx.replaceStrings(pak.character, newSlot, pak.slot, contentStr)
-  } {
-    println("the new string was created.")
-    PakManager.write2Disk(destination,newStr)
-
-  }.swap.foreach(_.printStackTrace())
+    //get items to swap and their swaps from source file
+    //TODO
+    swaps <- SfvRegEx.identifySwaps(pak.character, newSlot, pak.slot, contentStr)
+    swappedBytes = ByteArrayOps.replaceAll(source, swaps)
+    newStr = FileManager.bytesToString(swappedBytes)
+    _ = println("the new string was created.")
+    f <- PakManager.write2Disk(destination,newStr)
+  } yield f
+  res.swap.foreach(_.printStackTrace())
   println("Done.")
 }

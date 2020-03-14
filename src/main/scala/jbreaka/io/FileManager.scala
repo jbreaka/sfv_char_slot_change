@@ -4,8 +4,8 @@ import java.io.{File, FileInputStream, FileOutputStream, IOException, PrintWrite
 
 import jbreaka.capcom.CharacterCodes
 import jbreaka.capcom.CharacterCodes.Pak
-import scalaz.\/
-
+import scalaz._
+import Scalaz._
 import scala.annotation.tailrec
 import scala.io.Source
 
@@ -16,10 +16,21 @@ object FileManager {
   /**
    * Read binary file from disk and translate it to string
    */
-  def fileToString(file:File):Exception\/String = \/.fromTryCatchNonFatal{
+  def fileToBytes(file:File):Exception\/Array[Byte] = \/.fromTryCatchNonFatal{
     val in = new FileInputStream(file)
-    String.valueOf(in.readAllBytes().map(_.toChar))
+    in.readAllBytes()
   }.leftMap(t=> if(t.isInstanceOf[Exception]) t.asInstanceOf[Exception] else new Exception(t))
+
+  def bytesToString(bytes:Array[Byte]):String = (bytes.map(_.toChar)).mkString
+
+  def fileToString(file:File):Exception\/String = {
+    fileToBytes(file).map(by => {
+      bytesToString(by)
+    }) match {
+      case \/-(bys) if(bys.length != file.length())=> new IllegalStateException(s"Only was able to read ${bys.length} but should have read ${file.length()}").left[String]
+      case v => v
+    }
+  }
 
   def manage(pak:Pak, newSlot:Short, files:Set[File])={
 
