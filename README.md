@@ -2,7 +2,7 @@
 This tool is intended to swap mods to different character slots.  It requires <a href="https://www.oracle.com/technetwork/java/javase/downloads/jdk13-downloads-5672538.html">Java</a> to run.  This tool can run on any computer (Windows, Mac, Linux)
 
 ====We're in Alpha Currently=========<br>
-Download latest version <a href="https://drive.google.com/open?id=1lFQ_pHWtRQMV-7NIklR1_-iaaJkt7wtn">here</a>.
+Download latest version <a href="https://drive.google.com/open?id=1CrIG-K8H15L63pLPv0tV4buPzwAnmNB9">here</a>.
 To run open a command line/terminal and navigate to the directory of the sfv_char_slot_change JAR file. Type the following:
 
 =======Example ================<br>
@@ -13,6 +13,6 @@ To run open a command line/terminal and navigate to the directory of the sfv_cha
 </ul>
 By typing the following command I get the desired changes.<br><br>
 
-java -Xmx4096m -jar sfv_char_slot_change-0.1.jar 2 RyuC1Awesome.pak RyuC2Awesome.pak
+java -Xmx4096m -jar sfv_char_slot_change-0.2.jar 2 RyuC1Awesome.pak RyuC2Awesome.pak
 
 <br><i>note: In the command, I allocate 4G (4096M) of RAM.  You can allocate less, the entire PAK is loaded into memory and worked on in multiple copies.</i> 
