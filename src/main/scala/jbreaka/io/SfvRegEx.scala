@@ -34,7 +34,7 @@ object SfvRegEx {
 
   protected val REPLACE_REGEEX  = "(StreetFighterV|STREETFIGHTERV|streetfighterv)/Content/Chara/[a-zA-Z0-9]{3}/[a-zA-Z]*/\\d{2}".r
 
-  case class Change(regEx:Regex,replace:String){
+  case class Change(regEx:Regex,replace:String,oddity:Boolean=false){
     def change(str:String):String = {
       println(s"replacing ${regEx.pattern} to $replace ...")
       regEx.replaceAllIn(str,replace)
@@ -66,7 +66,7 @@ object SfvRegEx {
       changeCodes ++
       List(
         Change(s"/$prevSlotStr/".r,s"/$newSlotStr/"),
-        Change(s"/$prevCharCode".r,s"/$newCharCode")
+        Change(s"/$prevCharCode[^/]".r,s"/$newCharCode",true)
       ) ++
         List[String]("Costume","Preview","Setting","Preset","Material","Prop").
           map(k => Change((s"${k}_${prevSlotStr}").r,s"${k}_${newSlotStr}"))
@@ -88,8 +88,10 @@ object SfvRegEx {
       _ = println(change)
       matched:SV[List[String]] = change.regEx.findAllIn(content).toSet.toList.right[Exception]
       mtch <- ListT[SV,String](matched)
-      _ = println(s"$mtch  -->  ${change.replace}")
-    } yield Swap(mtch.getBytes,change.replace.getBytes)).run
+      //we want to avoid /CharCode/ folder being changed, so this helps filter out the problem
+      replacementStr = if(change.oddity) change.replace + mtch.last else change.replace
+      _ = println(s"$mtch  -->  ${replacementStr}")
+    } yield Swap(mtch.getBytes,replacementStr.getBytes)).run
   }
 
   def replaceStrings(char:SfvChar, newSlot:Short, prevSlot:Short, str:String):String={

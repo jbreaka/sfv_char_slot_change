@@ -40,4 +40,15 @@ class SfvRegExTest  extends AnyFunSuite {
     println("expected::\n"+expected)
     assert(result == expected)
   }
+
+  test("test'n regex"){
+    import scala.util.matching._
+    import scala.util.matching.Regex._
+
+    val codeR = "/CNL[^/]".r
+    val str = """/CNL123  /CNL/  /CNL_12"""
+    val resList = codeR.findAllIn(str).toList
+    assert(resList.size == 2,s"size was ${resList.size} but should be 2")
+    resList.foreach(println)
+  }
 }
