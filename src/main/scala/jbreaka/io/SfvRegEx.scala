@@ -62,14 +62,15 @@ object SfvRegEx {
       List(
         Change("(StreetFighterV|STREETFIGHTERV|streetfighterv)/Content".r,"StreetFighterV/Content"),
         Change(s"${prevCharCode}_${prevSlotStr}".r,s"${newCharCode}_${newSlotStr}"),
+        Change(s"${prevCharCode}_".r,s"${newCharCode}_")
       ) ++
       changeCodes ++
+      List[String]("Costume","Preview","Setting","Preset","Material","Prop").
+          map(k => Change((s"${k}_${prevSlotStr}").r,s"${k}_${newSlotStr}")) ++
       List(
         Change(s"/$prevSlotStr/".r,s"/$newSlotStr/"),
         Change(s"/$prevCharCode[^/]".r,s"/$newCharCode",true)
-      ) ++
-        List[String]("Costume","Preview","Setting","Preset","Material","Prop").
-          map(k => Change((s"${k}_${prevSlotStr}").r,s"${k}_${newSlotStr}"))
+      )
     }
   }
 
