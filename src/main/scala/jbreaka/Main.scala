@@ -7,6 +7,7 @@ import jbreaka.io.{ByteArrayOps, FileManager, PakManager, SfvRegEx}
 import scalaz._
 import Scalaz._
 import jbreaka.io.ByteArrayOps.Swap
+import jbreaka.io.SfvRegEx.getMagicNumberSequence
 
 import scala.jdk.CollectionConverters._
 
@@ -37,7 +38,16 @@ ie.  sfv_char_slot_change 2 poisonC1-Catwoman.pak poisonC2-Catwoman.pak
   verifyFileArg(pak2Conv)
   val destination = new File(args(2))
   require(destination.getName.endsWith(".pak"),s"Destination file ${destination} must end with .pak")
-  
+
+  def swapContents(source:Array[Byte],prevSlot:Short, swaps:List[Swap]):Array[Byte]={
+    val swappedBytes = ByteArrayOps.replaceAll(source, swaps)
+    if(newSlot > 9 || prevSlot > 9){
+      val  (prev,next) = getMagicNumberSequence(newSlot, prevSlot)
+      ByteArrayOps.replaceAll(swappedBytes, prev,next,0)
+    }
+    else swappedBytes
+  }
+
   val res = for{
     source <- FileManager.fileToBytes(pak2Conv)
     contentStr <- FileManager.bytesToStringWithCheck(source, pak2Conv)
@@ -45,9 +55,8 @@ ie.  sfv_char_slot_change 2 poisonC1-Catwoman.pak poisonC2-Catwoman.pak
     pak <- CharacterCodes.analyzeContent(contentStr)
     _ = println(s"Found $pak")
     //get items to swap and their swaps from source file
-    //TODO
     swaps <- SfvRegEx.identifySwaps(pak.character, newSlot, pak.slot, contentStr)
-    swappedBytes = ByteArrayOps.replaceAll(source, swaps)
+    swappedBytes = swapContents(source,pak.slot, swaps)
     f <- PakManager.write2Disk(destination,swappedBytes)
   } yield f
   res.swap.foreach(_.printStackTrace())

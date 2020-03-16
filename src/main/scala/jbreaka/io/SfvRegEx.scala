@@ -41,7 +41,7 @@ object SfvRegEx {
     }
   }
 
-  def getMagicNumberSequence(newSlot:Short, prevSlot:Short):Change = {
+  def getMagicNumberSequence(newSlot:Short, prevSlot:Short):(Array[Byte],Array[Byte]) = {
     def getVal(slot:Short):Byte= {
       /*00 = C1 to 9
       0B = C10
@@ -73,7 +73,7 @@ object SfvRegEx {
     val SUFFIX : List[Byte] = List[Int](0x00, 0x00, 0x00, 0x0B).map(_.toByte)
     val prev = (getVal(prevSlot) :: SUFFIX).toArray
     val next = (getVal(newSlot) :: SUFFIX).toArray
-    Change(FileManager.bytesToString(prev).r,FileManager.bytesToString(next))
+    (prev,next)
   }
 
   /**
@@ -92,7 +92,6 @@ object SfvRegEx {
       prevSlotStr =  strFromSlot(prevSlot)
       _ = println(s"${prevCharCode}_${prevSlotStr} becomes ${newCharCode}_${newSlotStr}")
     } yield {
-      val magic = if(newSlot > 9 || prevSlot > 9) getMagicNumberSequence(newSlot, prevSlot)::Nil else Nil
       val changeCodes = if(prevCharCode == newCharCode) Nil else Change(s"_${prevCharCode}_".r,s"_${newCharCode}_")::Nil
       //These will be applied in sequence
       List(
@@ -106,7 +105,7 @@ object SfvRegEx {
       List(
         Change(s"/$prevSlotStr/".r,s"/$newSlotStr/"),
         Change(s"/$prevCharCode[^/]".r,s"/$newCharCode",true),
-      ) ++ magic
+      )
     }
   }
   /**

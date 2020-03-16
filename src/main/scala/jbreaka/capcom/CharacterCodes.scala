@@ -167,12 +167,14 @@ object CharacterCodes {
       else {
         val endIndex = path.indexOf('/',start+1)
         val sub = path.substring(start, endIndex).replaceAll("/","")
-        val resO = try {
+        val resO:Option[Short] = try {
           println("trying...."+sub)
           sub.toShort.some
         } catch {
-          case n:NumberFormatException => None
+          case n:NumberFormatException =>
+            None
           case e:Exception => e.printStackTrace()
+            None
         }
         resO match {
           case None => findSlot(endIndex)
