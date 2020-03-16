@@ -41,6 +41,41 @@ object SfvRegEx {
     }
   }
 
+  def getMagicNumberSequence(newSlot:Short, prevSlot:Short):Change = {
+    def getVal(slot:Short):Byte= {
+      /*00 = C1 to 9
+      0B = C10
+      0C = C11
+      0D = C12
+      0E = C13
+      0F = C14
+      10 = C15
+      11 = C16
+      12 = C17
+      13 = C18
+      14 = C19
+      15 = C20
+      16 = C21
+      17 = C22
+      18 = C23
+      19 = C24
+      20 = C25
+      21 = C26
+      22 = C27
+      23 = C28
+      24 = C29
+      25 = C30*/
+      val res = if(slot < 10) 0
+      else if(slot < 25)(slot+1)
+      else (slot+7)
+      res.toByte
+    }
+    val SUFFIX : List[Byte] = List[Int](0x00, 0x00, 0x00, 0x0B).map(_.toByte)
+    val prev = (getVal(prevSlot) :: SUFFIX).toArray
+    val next = (getVal(newSlot) :: SUFFIX).toArray
+    Change(FileManager.bytesToString(prev).r,FileManager.bytesToString(next))
+  }
+
   /**
    * Get the changes that need to be made
    * @param char
@@ -57,6 +92,7 @@ object SfvRegEx {
       prevSlotStr =  strFromSlot(prevSlot)
       _ = println(s"${prevCharCode}_${prevSlotStr} becomes ${newCharCode}_${newSlotStr}")
     } yield {
+      val magic = if(newSlot > 9 || prevSlot > 9) getMagicNumberSequence(newSlot, prevSlot)::Nil else Nil
       val changeCodes = if(prevCharCode == newCharCode) Nil else Change(s"_${prevCharCode}_".r,s"_${newCharCode}_")::Nil
       //These will be applied in sequence
       List(
@@ -69,11 +105,10 @@ object SfvRegEx {
           map(k => Change((s"${k}_${prevSlotStr}").r,s"${k}_${newSlotStr}")) ++
       List(
         Change(s"/$prevSlotStr/".r,s"/$newSlotStr/"),
-        Change(s"/$prevCharCode[^/]".r,s"/$newCharCode",true)
-      )
+        Change(s"/$prevCharCode[^/]".r,s"/$newCharCode",true),
+      ) ++ magic
     }
   }
-
   /**
    * Determine which strings within the PAK need to be replaced and with what.  This returns that replacement/swap
    * pairing.

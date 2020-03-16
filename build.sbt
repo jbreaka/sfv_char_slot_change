@@ -1,6 +1,6 @@
 name := "sfv_char_slot_change"
 
-version := "0.4"
+version := "0.5"
 
 scalaVersion := "2.13.1"
 
