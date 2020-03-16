@@ -18,8 +18,14 @@ object ByteArrayOps {
   case class Swap(patterns:Array[Byte],replacement:Array[Byte])
   def replaceAll(source:Array[Byte], swaps:List[Swap]):Array[Byte]={
     println("Swapping all references within the PAK contents")
+    val TOTAL = swaps.size.toDouble
+
     swaps.foldLeft(source)((src,swap)=>{
-      replaceAll(src,swap.patterns,swap.replacement)
+      val index = swaps.indexOf(swap).toDouble
+      val percentage = ((index/TOTAL)*100).toInt
+      val res = replaceAll(src,swap.patterns,swap.replacement)
+      print(s" ${percentage}% done \r")
+      res
     })
   }
 }
